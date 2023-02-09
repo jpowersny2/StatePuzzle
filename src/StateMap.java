@@ -158,7 +158,7 @@ public class StateMap implements Runnable {
     }
 
     private synchronized void WriteThreadNumber(int thread) {
-        String fileName = this.home + File.separator + "solutions" + File.separator + "lastthread.txt";
+        String fileName = this.home + File.separator + "solutions" + File.separator + "lastjob.trk";
         try {
             Files.writeString(
                     Path.of(fileName),
