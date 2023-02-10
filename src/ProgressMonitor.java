@@ -47,15 +47,18 @@ public class ProgressMonitor implements Runnable {
     }
 
     private float percentage(String states) {
-        int startsAt = states.indexOf(":") + 8;
-        String substring = states.substring(startsAt, startsAt + 5);
-        char[] chars = substring.toCharArray();
-        int s0 = charToInt(chars[4]);
-        int s1 = charToInt(chars[3]);
-        int s2 = charToInt(chars[2]);
-        int s3 = charToInt(chars[1]);
-        int s4 = charToInt(chars[0]);
-        int quadValue = s0 + 4*s1 + 16*s2 + 64*s3 + 256*s4;
+        int quadValue = 0;
+        if (states.length() > 20) {
+            int startsAt = states.indexOf(":") + 8;
+            String substring = states.substring(startsAt, startsAt + 5);
+            char[] chars = substring.toCharArray();
+            int s0 = charToInt(chars[4]);
+            int s1 = charToInt(chars[3]);
+            int s2 = charToInt(chars[2]);
+            int s3 = charToInt(chars[1]);
+            int s4 = charToInt(chars[0]);
+            quadValue = s0 + 4 * s1 + 16 * s2 + 64 * s3 + 256 * s4;
+        }
         return quadValue * 100 / 1024.0F;
     }
 
