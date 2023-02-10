@@ -29,8 +29,34 @@ States have the following areas:
   firstjob: default is 0. If you specify a number between 0 and 4095, it will start with
             that job and eventually end at 4095. However, it will not include any job
             already completed, as recorded in lastjob.trk (see below).
-  
-  
+
+Display:
+The display is written for a VT100 terminal using control codes to rewrite
+the screen. Therefore, it is written for with linux in mind, but otherwise will run
+on any OS that support Java 11 and has a <home> directory property. 
+The display will work properly in a Windows command shell if you run ansicon.exe first
+(https://github.com/adoxa/ansicon/releases).
+
+The columns are:
+
+      Thread number: or execution slot. There will be a row for each of the threads specified on
+                     the command line.
+      Pecentage:     Approximately how complete each job is. This is calculated by using the color
+                     number of states 6-10.
+      Job number:    As an execution slot becomes available, a new job will slot it. The job number
+                     is the first 6 states color minus 111111, base 4.
+      Map string:    This is the color of each of the 48 states.
+
+The display is updated after a thread has found 10 million legal maps.
+
+Results:
+Final and intermediate results are stored in the users <home>/solutions.
+<number>.txt are some of the scores that were found. When the puzzle is
+complete, the lowest numbered txt file is the solution. The highest will be the most "expensive"
+and should have exactly the opposite colored states, red<->yellow, blue<->green.  
+The <number>.txt files between the lowest and highest are just that, but they are by no means
+a complete list. The files in between the highest and lowest may be discarded at any time.
+
   Theory of operation:
   There are 4^48 combinations of 4 colors on 48 states, including "illegal" combinations".
   The software solves this exhaustively through recursion. But once it finds two states 
@@ -46,26 +72,4 @@ States have the following areas:
   <user>/solutions/lastjob.trk contains a list of all completed jobs. Jobs found in this file will
   not be evaluated when the program is run again.
   
-  Display:
-  The display is currently written for a VT100 terminal using control codes to rewrite
-  the screen. Therefore, it is written for with linux in mind at this time, but otherwise will run
-  on any OS that support Java 11 and has a <home> directory property. The columns are:
   
-      Thread number: or execution slot. There will be a row for each of the threads specified on
-                     the command line.
-      Pecentage:     Approximately how complete each job is. This is calculated by using the color
-                     number of states 6-10.
-      Job number:    As an execution slot becomes available, a new job will slot it. The job number
-                     is the first 6 states color minus 111111, base 4.
-      Map string:    This is the color of each of the 48 states.
-  
-  The display is updated after a thread has found 10 million legal maps.
-  
-    
-  Results:
-  Final and intermediate results are stored in the users <home>/solutions.
-  <number>.txt are some of the scores that were found. When the puzzle is
-  complete, the lowest numbered txt file is the solution. The highest will be the most "expensive"
-  and should have exactly the opposite colored states, red<->yellow, blue<->green.  
-  The <number>.txt files between the lowest and highest are just that, but they are by no means
-  a complete list. The files inbetween the highest and lowest may be discarded at any time.
