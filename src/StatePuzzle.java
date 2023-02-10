@@ -40,7 +40,7 @@ public class StatePuzzle {
 
     private static void printHelpMessage() {
         System.out.println("Usage: [maxThreads] [startingThread]");
-        System.out.println("defauls: 4 0");
+        System.out.println("defaults: 4 0");
     }
 
     private void solve(int maxThreads, int startingThread) {
