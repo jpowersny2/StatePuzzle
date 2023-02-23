@@ -71,7 +71,7 @@ public class ProgressMonitor implements Runnable {
         float high = 0f;
         int highIndex = 0;
         for (int slot = 0; slot < maxThreads; slot++) {
-            if (printSlots[slot] != null && printSlots.length > 20) {
+            if (printSlots[slot] != null && printSlots[slot].length() > 20) {
                 float c = percentage(printSlots[slot].toString());
                 if (c > high) {
                     high = c;
