@@ -8,14 +8,14 @@ public class ProgressMonitor implements Runnable {
     }
 
     public synchronized int findSlot() {
-        int slot;
-        for (slot = 0; slot < maxThreads; slot++) {
-            if (printSlots[slot] == null) {
-                printSlots[slot] = new StringBuilder();
+        int slot = -1;
+        for (int x = 0; x < maxThreads; x++) {
+            if (printSlots[x] == null) {
+                printSlots[x] = new StringBuilder();
+                slot = x;
                 break;
             }
         }
-        printSlots[slot] = new StringBuilder();
         return slot;
     }
 
@@ -111,7 +111,7 @@ public class ProgressMonitor implements Runnable {
                 }
             }
         } catch (InterruptedException e) {
-            System.err.println(e.toString());
+            System.err.println(e);
             System.exit(1);
         }
         System.out.println();

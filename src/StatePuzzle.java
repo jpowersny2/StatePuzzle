@@ -10,6 +10,9 @@ import java.util.HashSet;
 
 
 public class StatePuzzle {
+
+    final Object monitor = new Object();
+
     public StatePuzzle() {
     }
 
@@ -44,7 +47,6 @@ public class StatePuzzle {
     }
 
     private void solve(int maxThreads, int startingThread) {
-        Object monitor = new Object();
         ProgressMonitor progressMonitor = new ProgressMonitor(maxThreads);
         HashSet<Integer> skipThread = new HashSet<>();
 
@@ -57,7 +59,10 @@ public class StatePuzzle {
                 getThreadsToSkip(skipThread);
                 if (!skipThread.contains(threadsRunning)) {
                     StateInfo[] stateInfo = StateInfo.stateInfoFactory();
-                    StateMap map = new StateMap(threadsRunning, stateInfo, maxThreads, monitor, progressMonitor);
+                    StateMap map = new StateMap(threadsRunning, stateInfo, monitor, progressMonitor);
+		            while (!map.findExecutionSlot()) {
+                    	Thread.sleep(100L);
+		            }
                     (new Thread(map)).start();
                     Thread.sleep(100L);
 
@@ -81,10 +86,8 @@ public class StatePuzzle {
                     monitor.wait();
                 }
             }
-
-            System.out.println("Total solutions found: " + StateMap.getNumberOfSolutions());
         } catch (InterruptedException e) {
-            System.err.println(e.toString());
+            System.err.println(e);
             System.exit(1);
         }
     }

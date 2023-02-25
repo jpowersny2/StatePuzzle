@@ -17,21 +17,18 @@ import static java.nio.file.StandardOpenOption.APPEND;
 public class StateMap implements Runnable {
     private final Object monitor;
     private static int threadsRunning;
-    private static int numberOfSolutions;
     private final int[] mapColors = new int[48];
     private final String home;
     private final StateInfo[] stateInfo;
     private final int threadNumber;
     private final StringBuilder path;
-    private int maxThreads;
-    private HiLoScore hiLoScore;
+    private final HiLoScore hiLoScore;
     private int solutionCount;
     private int slot;
-    ProgressMonitor progressMonitor;
+    final ProgressMonitor progressMonitor;
 
-    public StateMap(int threadNumber, StateInfo[] stateInfo, int maxThreads, Object monitor, ProgressMonitor progressMonitor) {
+    public StateMap(int threadNumber, StateInfo[] stateInfo, Object monitor, ProgressMonitor progressMonitor) {
         this.monitor = monitor;
-        this.maxThreads = maxThreads;
         this.threadNumber = threadNumber;
         this.mapColors[0] = threadNumber / 1024;
         threadNumber -= this.mapColors[0] * 1024;
@@ -52,10 +49,8 @@ public class StateMap implements Runnable {
         this.mapColors[5]++;
         this.stateInfo = stateInfo;
         this.home = System.getProperty("user.home");
-        numberOfSolutions = 0;
         this.path = new StringBuilder(100);
         this.progressMonitor = progressMonitor;
-        slot = progressMonitor.findSlot();
         hiLoScore = new HiLoScore();
     }
 
@@ -63,26 +58,18 @@ public class StateMap implements Runnable {
         return threadsRunning;
     }
 
-    static synchronized int getNumberOfSolutions() {
-        return numberOfSolutions;
-    }
-
-    synchronized void printThreadStarted() {
-        System.out.println("Started Thread" + this.threadNumber);
+    public boolean findExecutionSlot() {
+        slot = progressMonitor.findSlot();
+	    return slot >= 0;
     }
 
     public void run() {
-        int thread = this.threadNumber;
         this.incrementThreadCount();
-        // this.printThreadStarted();
         this.generateSolutions(6);
         progressMonitor.done(slot);
-        this.decrementThreadCount();
-        WriteThreadNumber(thread);
-    }
 
-    private synchronized void incrementNumberOfSolutions() {
-        ++numberOfSolutions;
+        this.decrementThreadCount();
+        WriteThreadNumber(threadNumber);
     }
 
     private void incrementThreadCount() {
@@ -118,7 +105,6 @@ public class StateMap implements Runnable {
         if (state == 48) {
             this.writeSolution();
             this.printSolutionToScreen();
-            this.incrementNumberOfSolutions();
         } else {
             for(int c = 1; c <= 4; ++c) {
                 this.mapColors[state] = c;
@@ -147,7 +133,7 @@ public class StateMap implements Runnable {
         this.path.append(File.separator);
         this.path.append("solutions");
         this.path.append(File.separator);
-        this.path.append(Integer.toString(this.score()));
+        this.path.append(score());
         if (attempt > 0) {
             this.path.append("-");
             this.path.append(String.format("%04d", attempt));
@@ -162,12 +148,12 @@ public class StateMap implements Runnable {
         try {
             Files.writeString(
                     Path.of(fileName),
-                    Integer.toString(thread) + System.lineSeparator(),
+                    thread + System.lineSeparator(),
                     CREATE, APPEND
             );
         } catch (IOException e) {
             System.err.println("Can't write " + fileName);
-            System.err.println(e.toString());
+            System.err.println(e);
         }
     }
 
@@ -200,7 +186,7 @@ public class StateMap implements Runnable {
                         }
                     }
                 } catch (StateNameError | IOException var16) {
-                    Logger.getLogger(StateMap.class.getName()).log(Level.SEVERE, (String) null, var16);
+                    Logger.getLogger(StateMap.class.getName()).log(Level.SEVERE,  null, var16);
                 }
             }
         }
