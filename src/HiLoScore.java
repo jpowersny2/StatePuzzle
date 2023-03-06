@@ -25,6 +25,10 @@ public class HiLoScore {
         high = hi;
     }
 
+    public int getLow() {
+        return low;
+    }
+
     public boolean isWithin(int value) {
         return (value >= low && value <= high);
     }
