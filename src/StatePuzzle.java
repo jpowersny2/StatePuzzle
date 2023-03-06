@@ -51,8 +51,8 @@ public class StatePuzzle {
         HashSet<Integer> skipThread = new HashSet<>();
 
         try {
-
-            (new Thread(progressMonitor)).start();
+            Thread monitorThread = new Thread(progressMonitor);
+            monitorThread.start();
 
             int threadsRunning;
             for(threadsRunning = startingThread; threadsRunning < 4096; ++threadsRunning) {
@@ -64,7 +64,6 @@ public class StatePuzzle {
                     	Thread.sleep(100L);
 		            }
                     (new Thread(map)).start();
-                    Thread.sleep(100L);
 
                     while(maxThreads <= StateMap.getNumberOfThreadsRunning()) {
                         synchronized (monitor) {
@@ -78,7 +77,6 @@ public class StatePuzzle {
 
             while((threadsRunning = StateMap.getNumberOfThreadsRunning()) > 0) {
                 if (prevThreadsRunning != threadsRunning) {
-                    //System.out.println("Threads running = " + threadsRunning);
                     prevThreadsRunning = threadsRunning;
                 }
 
@@ -86,6 +84,8 @@ public class StatePuzzle {
                     monitor.wait();
                 }
             }
+            progressMonitor.stop();
+            monitorThread.join();
         } catch (InterruptedException e) {
             System.err.println(e);
             System.exit(1);

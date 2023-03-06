@@ -65,11 +65,26 @@ public class StateMap implements Runnable {
 
     public void run() {
         this.incrementThreadCount();
-        this.generateSolutions(6);
+        printSolutionToScreen();
+        int cost = costOfFirst6States();
+        if (cost >= 0) {
+            this.generateSolutions(6, cost);
+        }
         progressMonitor.done(slot);
 
         this.decrementThreadCount();
         WriteThreadNumber(threadNumber);
+    }
+
+    private int costOfFirst6States() {
+        int cost = 0;
+        for (int state = 0; state < 6; state++) {
+            if (touching(state)) {
+                return -1;
+            }
+            cost += this.stateInfo[state].getArea() * this.mapColors[state];
+        }
+        return cost;
     }
 
     private void incrementThreadCount() {
@@ -88,7 +103,7 @@ public class StateMap implements Runnable {
 
     private synchronized void printSolutionToScreen() {
         if (--solutionCount <= 0) {
-            solutionCount = 10000000;
+            solutionCount = 20000000;
             StringBuilder sb = progressMonitor.getStringBuilder(slot);
             sb.setLength(0);
             sb.append(String.format("%4d", threadNumber)).append(": ");
@@ -101,15 +116,16 @@ public class StateMap implements Runnable {
         }
     }
 
-    private void generateSolutions(int state) {
+    private void generateSolutions(int state, int cost) {
         if (state == 48) {
-            this.writeSolution();
+            this.writeSolution(cost);
             this.printSolutionToScreen();
         } else {
-            for(int c = 1; c <= 4; ++c) {
-                this.mapColors[state] = c;
-                if (!this.touching(state)) {
-                    this.generateSolutions(state + 1);
+            for(int color = 1; color <= 4; ++color) {
+                this.mapColors[state] = color;
+                int newCost = cost + (color * stateInfo[state].getArea());
+                if (newCost < hiLoScore.getLow() && !this.touching(state)) {
+                    this.generateSolutions(state + 1, newCost);
                 }
             }
 
@@ -127,13 +143,13 @@ public class StateMap implements Runnable {
         return false;
     }
 
-    private String createName(int attempt) {
+    private String createName(int attempt, int cost) {
         this.path.setLength(0);
         this.path.append(this.home);
         this.path.append(File.separator);
         this.path.append("solutions");
         this.path.append(File.separator);
-        this.path.append(score());
+        this.path.append(cost);
         if (attempt > 0) {
             this.path.append("-");
             this.path.append(String.format("%04d", attempt));
@@ -157,9 +173,9 @@ public class StateMap implements Runnable {
         }
     }
 
-    private synchronized void writeSolution() {
-        if (!hiLoScore.setIsWithin(this.score())) {
-            String pathString = createName(0);
+    private synchronized void writeSolution(int cost) {
+        if (!hiLoScore.setIsWithin(cost)) {
+            String pathString = createName(0, cost);
             File f = new File(pathString);
             if (!f.exists()) {
                 try {
@@ -167,8 +183,10 @@ public class StateMap implements Runnable {
                     Throwable except = null;
 
                     try {
+                        br.write("Job Number " + threadNumber);
+                        br.newLine();
                         for (int x = 0; x < 48; ++x) {
-                            br.write(StateNames.getName(x) + ":" + this.getColorText(this.mapColors[x]));
+                            br.write(StateInfo.getName(x) + ":" + this.getColorText(this.mapColors[x]));
                             br.newLine();
                         }
                     } catch (Throwable e) {
@@ -192,15 +210,6 @@ public class StateMap implements Runnable {
         }
     }
 
-    private int score() {
-        int score = 0;
-
-        for(int state = 0; state < 48; ++state) {
-            score += this.stateInfo[state].getArea() * this.mapColors[state];
-        }
-
-        return score;
-    }
 
     private String getColorText(int mapColor) {
         String color;

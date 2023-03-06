@@ -1,6 +1,7 @@
 public class ProgressMonitor implements Runnable {
     StringBuilder[] printSlots;
     int maxThreads;
+    boolean run;
 
     public ProgressMonitor(int maxThreads) {
         printSlots = new StringBuilder[maxThreads];
@@ -82,32 +83,18 @@ public class ProgressMonitor implements Runnable {
         return highIndex;
     }
 
+    public synchronized void stop() {
+        this.run = false;
+        notify();
+    }
+
     public void run() {
-        StringBuilder line = new StringBuilder();
+        this.run = true;
         try {
-            while (true) {
+            while (this.run) {
+                printScreen();
                 synchronized(this) {
                     this.wait();
-                }
-                int highIndex = getHighPercentIndex();
-                System.out.print("\033[0;0H"); // cursor to top-left
-                for (int slot = 0; slot < maxThreads; slot++) {
-                    line.setLength(0);
-                    line.append(String.format("%4d  ", slot));
-                    if (printSlots[slot] != null) {
-                        if (highIndex == slot) {
-                            line.append("\033[1m");
-                        }
-                        line.append(percentageString(printSlots[slot].toString()));
-                        if (highIndex == slot) {
-                            line.append("\033[0m");
-                        }
-                        line.append(" ");
-                        line.append(printSlots[slot].toString());
-                    } else {
-                        line.append("\033[K"); // clear to end of line
-                    }
-                    System.out.println(line);
                 }
             }
         } catch (InterruptedException e) {
@@ -115,5 +102,29 @@ public class ProgressMonitor implements Runnable {
             System.exit(1);
         }
         System.out.println();
+    }
+
+    private synchronized void printScreen() {
+        StringBuilder line = new StringBuilder();
+        int highIndex = getHighPercentIndex();
+        System.out.print("\033[0;0H"); // cursor to top-left
+        for (int slot = 0; slot < maxThreads; slot++) {
+            line.setLength(0);
+            line.append(String.format("%4d  ", slot));
+            if (printSlots[slot] != null) {
+                if (highIndex == slot) {
+                    line.append("\033[1m");
+                }
+                line.append(percentageString(printSlots[slot].toString()));
+                if (highIndex == slot) {
+                    line.append("\033[0m");
+                }
+                line.append(" ");
+                line.append(printSlots[slot].toString());
+            } else {
+                line.append("\033[K"); // clear to end of line
+            }
+            System.out.println(line);
+        }
     }
 }

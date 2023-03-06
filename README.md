@@ -10,7 +10,7 @@ States have the following areas:
   DE=2    FL=59    GA=59   ID=84    IL=56    IN=36
   IA=56   KS=82    KY=40   LA=49    ME=33    MD=11
   MA=8    MI=58    MN=84   MS=48    MO=70    MT=147
-  NE=77   NV=110   NH=9    NJ=8     MN=122   NY=50
+  NE=77   NV=110   NH=9    NJ=8     NM=122   NY=50
   NC=53   ND=71    OH=41   OK=70    OR=97    PA=45
   RI=1    SC=31    SD=77   TN=42    TX=267   UT=85
   VT=10   VA=41    WA=68   WV=24    WI=56    WY=98
@@ -52,21 +52,26 @@ The display is updated after a thread has found 10 million legal maps.
 Results:
 Final and intermediate results are stored in the users <home>/solutions.
 <number>.txt are some of the scores that were found. When the puzzle is
-complete, the lowest numbered txt file is the solution. The highest will be the most "expensive"
-and should have exactly the opposite colored states, red<->yellow, blue<->green.  
-The <number>.txt files between the lowest and highest are just that, but they are by no means
-a complete list. The files in between the highest and lowest may be discarded at any time.
+complete, the lowest numbered txt file is the solution. The <number>.txt
+files between the lowest and highest are just that, but they are by no
+means a complete list. The files in between the highest and lowest may
+be discarded at any time.
 
   Theory of operation:
   There are 4^48 combinations of 4 colors on 48 states, including "illegal" combinations".
   The software solves this exhaustively through recursion. But once it finds two states 
   in an illegal position (shared boarder, same color) it does not traverse the tree any
   further, which cuts off a huge portion of the combinations, making the problem reasonable
-  to solve. Still many branches remain to be scored. Expect the solution to take several day
-  or more depending on your hardware.
+  to solve. Still many branches remain to be scored.
+  
+  In addition to this, the cost is considered along the way. The biggest (mostly costly) 
+  states are evaluated first. As the solution is being traversed, if the cost is higher
+  than the lowest solution so far, the remainder of the tree is cut off. This cuts the 
+  problem down by 4 to 5 orders of magnitude. Without this, the solution will take several
+  days, but with it, it may only take several seconds.
   
   The problem is broken down into 4096 pieces by using a base 4 count of the first 6 states,
-  which do not not share a border: TX, CA, MT, CO, VT, AL. The StateMap class assumes the first
+  which do not share a border: TX, CA, MT, CO, VT, AL. The StateMap class assumes the first
   6 states do not share a boarder and does not evaluate that.
   
   <user>/solutions/lastjob.trk contains a list of all completed jobs. Jobs found in this file will
